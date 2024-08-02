@@ -24,29 +24,28 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 	dbinit()
+
 	infrastructure.Init()
 	e := echo.New()
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
 func dbinit() {
-	// Get environment variables
+
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := 3306
+	dbHost := "172.18.0.1"
+	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 
-	// Construct DSN (Data Source Name)
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		dbUser, dbPassword, dbHost, dbName)
+		dbUser, dbPassword, dbHost, dbPort, dbName)
 
-	// Connect to the database
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Migrate the schema
 	if err := db.AutoMigrate(&domain.User{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
